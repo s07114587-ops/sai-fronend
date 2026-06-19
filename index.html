@@ -62,7 +62,7 @@
         .ai-msg { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
         .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: rgba(0, 0, 0, 0.6); border-radius: 15px; color: #a072ff; font-size: 14px; font-weight: 600; border-bottom-left-radius: 4px; border: 1px solid rgba(160, 114, 255, 0.2); }
         
-        /* 💡 Quick Prompts Grid (Updated to Grid Layout for 6 buttons) */
+        /* 💡 Quick Prompts Grid */
         .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 600px; padding: 20px; }
         .welcome-box h2 { font-size: 24px; color: #a072ff; margin-bottom: 10px; }
         .welcome-box p { font-size: 14px; color: #ccc; margin-bottom: 20px; }
@@ -109,7 +109,7 @@
             <div class="prompt-grid">
                 <button class="prompt-btn" onclick="quickPrompt('Draw a realistic high quality cat')">🎨 Draw a Cat</button>
                 <button class="prompt-btn" onclick="quickPrompt('Tell me a funny programming joke')">😂 Tell a Joke</button>
-                <button class="prompt-btn" onclick="quickPrompt('What is today weather update?')">🌡️ Today's Weather</button>
+                <button class="prompt-btn" onclick="quickPrompt('weather in kolkata')">🌡️ Today's Weather</button>
                 <button class="prompt-btn" onclick="quickPrompt('Show me live football scores and match updates')">⚽ Live Football Score</button>
                 <button class="prompt-btn" onclick="quickPrompt('Create music / generate an AI song track')">🎵 Create Music</button>
                 <button class="prompt-btn" onclick="quickPrompt('Help me learning HTML and web coding step by step')">📚 Help me Learning</button>
@@ -220,7 +220,7 @@
                 msgDiv.innerText = '';
                 function typeWriter() {
                     if (i < text.length) {
-                        msgDiv.style.whiteSpace = 'pre-wrap'; // Preserve formatting/code lines
+                        msgDiv.style.whiteSpace = 'pre-wrap'; 
                         msgDiv.innerText += text.charAt(i);
                         i++;
                         chatBox.scrollTop = chatBox.scrollHeight;
@@ -273,7 +273,38 @@
                 return;
             }
 
-            // 🎵 Special Music Bypass: Directs users to top-tier AI music engines
+            // 🌡️ 🚀 New Multi-AI Routing: Keyless Weather API Integration (Bypass)
+            if (!selectedImageBase64 && lowerText.includes("weather")) {
+                // Default to Kolkata if no city specified, else extract city name
+                let city = "kolkata";
+                const words = lowerText.split(" ");
+                if (words.length > 2) {
+                    // Simple logic to find city name after "in" or "at"
+                    const inIndex = words.indexOf("in");
+                    if (inIndex !== -1 && words[inIndex + 1]) city = words[inIndex + 1];
+                }
+                
+                try {
+                    // Fetching clear format weather data from wttr.in bypass engine
+                    const res = await fetch(`https://wttr.in/${city}?format=%l:+%C+%t+(Humidity:+%h,+Wind:+%w)`);
+                    const weatherData = await res.text();
+                    
+                    loading.style.display = 'none';
+                    appendMessage(`🌡️ Weather Update:\n${weatherData}`, false);
+                    
+                    if(!isMuted) {
+                        const speech = new SpeechSynthesisUtterance(`Here is the weather update for ${city}`);
+                        speech.lang = 'en-US'; 
+                        window.speechSynthesis.speak(speech);
+                    }
+                } catch (err) {
+                    loading.style.display = 'none';
+                    appendMessage("Could not sync weather metrics at this moment. Please try again.", false);
+                }
+                return; 
+            }
+
+            // 🎵 Special Music Bypass
             if (lowerText.includes("music") || lowerText.includes("song")) {
                 setTimeout(() => {
                     loading.style.display = 'none';
@@ -282,7 +313,7 @@
                 return;
             }
 
-            // 🧠 Normal Backend processing (Joke, Learning, Live updates handled by Gemini backend)
+            // 🧠 Text Response via Render Backend
             try {
                 const payload = { message: text };
                 if (selectedImageBase64) {
