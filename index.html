@@ -283,9 +283,12 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        // ⚽ Function to append Interactive Live Football Score Widget (No API key needed!)
         function appendFootballWidget() {
             const widgetContainer = document.createElement('div');
             widgetContainer.className = 'football-widget-container ai-msg';
+            
+            // Integrating premium free real-time score provider iframe bypass
             widgetContainer.innerHTML = `
                 <iframe src="https://www.scoreaxis.com/widget/live-scores?autoHeight=false&links=false&bodyBackground=%23000000&font=Poppins" 
                         style="width:100%; height:100%; border:none; background:#000000;" 
@@ -338,13 +341,13 @@
                 return;
             }
 
-            // ⚽ Multi-AI Routing: Live Football Widget
+            // ⚽ 🚀 New Multi-AI Routing: Keyless Football Score Widget Integration (Bypass)
             if (!selectedImageBase64 && (lowerText.includes("football") || lowerText.includes("score") || lowerText.includes("match"))) {
                 setTimeout(() => {
                     loading.style.display = 'none';
                     appendFootballWidget();
                     if(!isMuted) {
-                        const speech = new SpeechSynthesisUtterance("Loading live football updates.");
+                        const speech = new SpeechSynthesisUtterance("Loading live football updates and match timelines.");
                         speech.lang = 'en-US'; 
                         window.speechSynthesis.speak(speech);
                     }
@@ -352,7 +355,7 @@
                 return;
             }
 
-            // 🌡️ Fixed Single-Fetch Weather Bypass Engine
+            // 🌡️ Multi-AI Routing: Keyless Weather API Integration
             if (!selectedImageBase64 && lowerText.includes("weather")) {
                 let city = "kolkata";
                 const words = lowerText.split(" ");
@@ -362,31 +365,27 @@
                 }
                 
                 try {
-                    // 🔥 Fixed Bug: Only 1 fetch request separating values by commas to prevent rate limit blocks!
-                    const res = await fetch(`https://wttr.in/${city}?format=%C,%t,%h,%w`);
-                    const dataText = await res.text();
-                    const parts = dataText.split(',');
+                    const resCondition = await fetch(`https://wttr.in/${city}?format=%C`);
+                    const resTemp = await fetch(`https://wttr.in/${city}?format=%t`);
+                    const resHumidity = await fetch(`https://wttr.in/${city}?format=%h`);
+                    const resWind = await fetch(`https://wttr.in/${city}?format=%w`);
                     
-                    if(parts.length >= 4) {
-                        const condition = parts[0].trim();
-                        const temp = parts[1].trim();
-                        const humidity = parts[2].trim();
-                        const wind = parts[3].trim();
-                        
-                        loading.style.display = 'none';
-                        appendWeatherCard(city, condition, temp, humidity, wind);
-                    } else {
-                        throw new Error("Invalid response format");
-                    }
+                    const condition = (await resCondition.text()).trim();
+                    const temp = (await resTemp.text()).trim();
+                    const humidity = (await resHumidity.text()).trim();
+                    const wind = (await resWind.text()).trim();
+                    
+                    loading.style.display = 'none';
+                    appendWeatherCard(city, condition, temp, humidity, wind);
                     
                     if(!isMuted) {
-                        const speech = new SpeechSynthesisUtterance(`Live weather processed for ${city}`);
+                        const speech = new SpeechSynthesisUtterance(`Live metrics synthesized for ${city}. Temperature is ${temp}`);
                         speech.lang = 'en-US'; 
                         window.speechSynthesis.speak(speech);
                     }
                 } catch (err) {
                     loading.style.display = 'none';
-                    appendMessage("Weather station sync reset. Please write 'weather in kolkata' again.", false);
+                    appendMessage("Could not sync weather metrics at this moment. Please try again.", false);
                 }
                 return; 
             }
@@ -394,5 +393,3 @@
             // 🎵 Special Music Bypass
             if (lowerText.includes("music") || lowerText.includes("song")) {
                 setTimeout(() => {
-                    loading.style.display = 'none';
-                    appendMessage("🎵 Processing audio wavelengths... To compose high-fidelity AI music, explore suno.com or udio.com directly!", fal
