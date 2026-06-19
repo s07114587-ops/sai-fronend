@@ -62,6 +62,22 @@
         .ai-msg { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
         .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: rgba(0, 0, 0, 0.6); border-radius: 15px; color: #a072ff; font-size: 14px; font-weight: 600; border-bottom-left-radius: 4px; border: 1px solid rgba(160, 114, 255, 0.2); }
         
+        /* 🌤️ Interactive HTML Weather Card Custom Styling */
+        .weather-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 15px 20px;
+            margin-top: 5px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            max-width: 320px;
+        }
+        .weather-city { font-size: 18px; font-weight: 600; color: #a072ff; text-transform: capitalize; margin-bottom: 2px; }
+        .weather-condition { font-size: 14px; color: #ddd; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+        .weather-temp { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .weather-details { font-size: 11px; color: #aaa; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 6px; display: flex; justify-content: space-between; }
+
         /* 💡 Quick Prompts Grid */
         .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 600px; padding: 20px; }
         .welcome-box h2 { font-size: 24px; color: #a072ff; margin-bottom: 10px; }
@@ -161,7 +177,7 @@
 
         // Clear Chat Logic
         clearBtn.addEventListener('click', () => {
-            const messages = chatBox.querySelectorAll('.message');
+            const messages = chatBox.querySelectorAll('.message, .weather-card');
             messages.forEach(msg => msg.remove());
             welcomeScreen.style.display = 'flex';
         });
@@ -231,6 +247,33 @@
             }
         }
 
+        // 🌤️ Function to append custom HTML Weather Card instead of raw text!
+        function appendWeatherCard(city, condition, temp, humidity, wind) {
+            const card = document.createElement('div');
+            card.className = 'weather-card ai-msg';
+            
+            // Map common keywords to custom emoji icons
+            let icon = "☁️";
+            const condLower = condition.toLowerCase();
+            if(condLower.includes("sun") || condLower.includes("clear")) icon = "☀️";
+            else if(condLower.includes("rain") || condLower.includes("shower")) icon = "🌧️";
+            else if(condLower.includes("thunder")) icon = "⛈️";
+            else if(condLower.includes("snow")) icon = "❄️";
+            else if(condLower.includes("mist") || condLower.includes("fog")) icon = "🌫️";
+
+            card.innerHTML = `
+                <div class="weather-city">📍 ${city}</div>
+                <div class="weather-condition">${icon} ${condition}</div>
+                <div class="weather-temp">${temp}</div>
+                <div class="weather-details">
+                    <span>💧 Humid: ${humidity}</span>
+                    <span>💨 Wind: ${wind}</span>
+                </div>
+            `;
+            chatBox.insertBefore(card, loading);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
         function appendImageMessage(imageUrl, isUser = false) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
@@ -273,27 +316,33 @@
                 return;
             }
 
-            // 🌡️ 🚀 New Multi-AI Routing: Keyless Weather API Integration (Bypass)
+            // 🌡️ 🚀 Updated Weather Bypass Engine (Outputs HTML instead of raw code)
             if (!selectedImageBase64 && lowerText.includes("weather")) {
-                // Default to Kolkata if no city specified, else extract city name
                 let city = "kolkata";
                 const words = lowerText.split(" ");
                 if (words.length > 2) {
-                    // Simple logic to find city name after "in" or "at"
                     const inIndex = words.indexOf("in");
                     if (inIndex !== -1 && words[inIndex + 1]) city = words[inIndex + 1];
                 }
                 
                 try {
-                    // Fetching clear format weather data from wttr.in bypass engine
-                    const res = await fetch(`https://wttr.in/${city}?format=%l:+%C+%t+(Humidity:+%h,+Wind:+%w)`);
-                    const weatherData = await res.text();
+                    // Fetch segmented data values to populate the custom HTML element safely
+                    const resCondition = await fetch(`https://wttr.in/${city}?format=%C`);
+                    const resTemp = await fetch(`https://wttr.in/${city}?format=%t`);
+                    const resHumidity = await fetch(`https://wttr.in/${city}?format=%h`);
+                    const resWind = await fetch(`https://wttr.in/${city}?format=%w`);
+                    
+                    const condition = (await resCondition.text()).trim();
+                    const temp = (await resTemp.text()).trim();
+                    const humidity = (await resHumidity.text()).trim();
+                    const wind = (await resWind.text()).trim();
                     
                     loading.style.display = 'none';
-                    appendMessage(`🌡️ Weather Update:\n${weatherData}`, false);
+                    // Render the sleek UI HTML element directly into the chat stream!
+                    appendWeatherCard(city, condition, temp, humidity, wind);
                     
                     if(!isMuted) {
-                        const speech = new SpeechSynthesisUtterance(`Here is the weather update for ${city}`);
+                        const speech = new SpeechSynthesisUtterance(`Live metrics synthesized for ${city}. Temperature is ${temp}`);
                         speech.lang = 'en-US'; 
                         window.speechSynthesis.speak(speech);
                     }
@@ -347,4 +396,4 @@
         }
     </script>
 </body>
-</html>
+</htm
