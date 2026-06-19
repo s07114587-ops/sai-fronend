@@ -62,12 +62,12 @@
         .ai-msg { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
         .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: rgba(0, 0, 0, 0.6); border-radius: 15px; color: #a072ff; font-size: 14px; font-weight: 600; border-bottom-left-radius: 4px; border: 1px solid rgba(160, 114, 255, 0.2); }
         
-        /* 💡 Quick Prompts Styling */
-        .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 500px; padding: 20px; }
+        /* 💡 Quick Prompts Grid (Updated to Grid Layout for 6 buttons) */
+        .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 600px; padding: 20px; }
         .welcome-box h2 { font-size: 24px; color: #a072ff; margin-bottom: 10px; }
         .welcome-box p { font-size: 14px; color: #ccc; margin-bottom: 20px; }
-        .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        .prompt-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 12px; border-radius: 12px; cursor: pointer; font-size: 13px; transition: 0.3s; text-align: left; }
+        .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .prompt-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px; border-radius: 12px; cursor: pointer; font-size: 13px; transition: 0.3s; text-align: left; display: flex; align-items: center; gap: 8px; }
         .prompt-btn:hover { background: rgba(111, 66, 193, 0.3); border-color: #6f42c1; }
 
         /* Preview Area for Selected Image */
@@ -107,10 +107,12 @@
             <h2>Welcome to s ai Pro</h2>
             <p>The World's Most Private & Fast Multi-AI Platform. Try an option below:</p>
             <div class="prompt-grid">
-                <button class="prompt-btn" onclick="quickPrompt('Draw a realistic cute cat')">🎨 Draw a cute cat</button>
-                <button class="prompt-btn" onclick="quickPrompt('Write an HTML simple button code')">💻 Write HTML button code</button>
-                <button class="prompt-btn" onclick="quickPrompt('Tell me a space mystery fact')">🚀 Space mystery fact</button>
-                <button class="prompt-btn" onclick="quickPrompt('Give me a funny programming joke')">😂 Programming joke</button>
+                <button class="prompt-btn" onclick="quickPrompt('Draw a realistic high quality cat')">🎨 Draw a Cat</button>
+                <button class="prompt-btn" onclick="quickPrompt('Tell me a funny programming joke')">😂 Tell a Joke</button>
+                <button class="prompt-btn" onclick="quickPrompt('What is today weather update?')">🌡️ Today's Weather</button>
+                <button class="prompt-btn" onclick="quickPrompt('Show me live football scores and match updates')">⚽ Live Football Score</button>
+                <button class="prompt-btn" onclick="quickPrompt('Create music / generate an AI song track')">🎵 Create Music</button>
+                <button class="prompt-btn" onclick="quickPrompt('Help me learning HTML and web coding step by step')">📚 Help me Learning</button>
             </div>
         </div>
         <div class="typing-indicator" id="loading">s ai Pro thinking... ⚡</div>
@@ -126,7 +128,7 @@
         <input type="file" id="file-input" accept="image/*">
         <button class="icon-btn" id="upload-btn" title="Upload Image">📎</button>
         
-        <input type="text" id="user-input" placeholder="Ask s ai Pro or send an image (100K Traffic Load Ready)...">
+        <input type="text" id="user-input" placeholder="Ask s ai Pro anything (100K Traffic Load Ready)...">
         <button class="icon-btn" id="send-btn">➤</button>
     </div>
 
@@ -157,12 +159,11 @@
             if(isMuted) window.speechSynthesis.cancel();
         });
 
-        // 🗑️ Clear Chat Logic
+        // Clear Chat Logic
         clearBtn.addEventListener('click', () => {
-            // Delete all messages except the welcome screen and loader
             const messages = chatBox.querySelectorAll('.message');
             messages.forEach(msg => msg.remove());
-            welcomeScreen.style.display = 'flex'; // Reshow quick prompts
+            welcomeScreen.style.display = 'flex';
         });
 
         // Theme Changer Logic
@@ -201,7 +202,6 @@
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
         sendBtn.addEventListener('click', () => { sendMessage(); });
 
-        // 💡 Quick Prompt Click Handler
         function quickPrompt(promptText) {
             userInput.value = promptText;
             sendMessage();
@@ -216,15 +216,15 @@
             if (isUser) {
                 msgDiv.innerText = text;
             } else {
-                // ✨ Typing Animation Effect for AI responses
                 let i = 0;
                 msgDiv.innerText = '';
                 function typeWriter() {
                     if (i < text.length) {
+                        msgDiv.style.whiteSpace = 'pre-wrap'; // Preserve formatting/code lines
                         msgDiv.innerText += text.charAt(i);
                         i++;
                         chatBox.scrollTop = chatBox.scrollHeight;
-                        setTimeout(typeWriter, 15); // Adjust typing speed here
+                        setTimeout(typeWriter, 12);
                     }
                 }
                 typeWriter();
@@ -243,7 +243,7 @@
             const text = userInput.value.trim();
             if (!text && !selectedImageBase64) return;
 
-            welcomeScreen.style.display = 'none'; // Hide welcome screen upon first text
+            welcomeScreen.style.display = 'none';
 
             if (selectedImageBase64) {
                 appendImageMessage(selectedImageBase64, true);
@@ -258,7 +258,7 @@
 
             const lowerText = text.toLowerCase();
 
-            // Multi-AI Routing: Flux Image Generation
+            // 🚀 Multi-AI Routing: Flux Image Generation
             if (!selectedImageBase64 && (lowerText.includes("image") || lowerText.includes("photo") || lowerText.includes("picture") || lowerText.includes("draw"))) {
                 const imageUrl = `https://image.pollinations.ai/p/${encodeURIComponent(text)}?model=flux&width=1024&height=1024`;
                 setTimeout(() => {
@@ -273,7 +273,16 @@
                 return;
             }
 
-            // Text + Image Response via Render Backend
+            // 🎵 Special Music Bypass: Directs users to top-tier AI music engines
+            if (lowerText.includes("music") || lowerText.includes("song")) {
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    appendMessage("🎵 Processing audio wavelengths... To compose, generate, and stream high-fidelity AI music with full vocals and custom instruments, please explore: https://suno.com or https://udio.com directly!", false);
+                }, 1000);
+                return;
+            }
+
+            // 🧠 Normal Backend processing (Joke, Learning, Live updates handled by Gemini backend)
             try {
                 const payload = { message: text };
                 if (selectedImageBase64) {
