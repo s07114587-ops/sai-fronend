@@ -9,7 +9,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
         
-        /* 🎯 Desktop Background (1.png) */
         body { 
             background: url('1.png') no-repeat center center fixed; 
             background-size: cover;
@@ -21,7 +20,6 @@
             transition: background 0.5s ease;
         }
         
-        /* 🎯 Mobile Background (0.png) */
         @media (max-width: 768px) {
             body { background: url('0.png') no-repeat center center fixed; background-size: cover; }
         }
@@ -38,7 +36,7 @@
             font-size: 13px;
             z-index: 10;
         }
-        .ribbon-left, .ribbon-right { display: flex; align-items: center; gap: 15px; }
+        .ribbon-left, .ribbon-right { display: flex; align-items: center; gap: 10px; }
         .brand-name { color: #a072ff; font-weight: bold; font-size: 15px; letter-spacing: 1px;}
         
         select, .ribbon-btn {
@@ -64,6 +62,14 @@
         .ai-msg { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
         .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: rgba(0, 0, 0, 0.6); border-radius: 15px; color: #a072ff; font-size: 14px; font-weight: 600; border-bottom-left-radius: 4px; border: 1px solid rgba(160, 114, 255, 0.2); }
         
+        /* 💡 Quick Prompts Styling */
+        .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 500px; padding: 20px; }
+        .welcome-box h2 { font-size: 24px; color: #a072ff; margin-bottom: 10px; }
+        .welcome-box p { font-size: 14px; color: #ccc; margin-bottom: 20px; }
+        .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .prompt-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 12px; border-radius: 12px; cursor: pointer; font-size: 13px; transition: 0.3s; text-align: left; }
+        .prompt-btn:hover { background: rgba(111, 66, 193, 0.3); border-color: #6f42c1; }
+
         /* Preview Area for Selected Image */
         .preview-container { display: none; padding: 5px 20px; background: rgba(0, 0, 0, 0.8); align-items: center; gap: 10px; }
         .image-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #a072ff; }
@@ -76,7 +82,6 @@
         .icon-btn { background: none; border: none; color: #a072ff; font-size: 22px; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .icon-btn:hover { background: #6f42c1; color: white; }
         
-        /* Hidden file input */
         #file-input { display: none; }
     </style>
 </head>
@@ -92,11 +97,22 @@
             </select>
         </div>
         <div class="ribbon-right">
+            <button id="clear-btn" class="ribbon-btn">🗑️ Clear</button>
             <button id="mute-btn" class="ribbon-btn">🔊 Sound On</button>
             <a href="#" class="privacy-link" onclick="alert('Privacy Policy: Your data is 100% safe. s ai Pro respects your privacy!')">Privacy Policy</a>
         </div>
     </div>
     <div class="chat-container" id="chat-box">
+        <div class="welcome-box" id="welcome-screen">
+            <h2>Welcome to s ai Pro</h2>
+            <p>The World's Most Private & Fast Multi-AI Platform. Try an option below:</p>
+            <div class="prompt-grid">
+                <button class="prompt-btn" onclick="quickPrompt('Draw a realistic cute cat')">🎨 Draw a cute cat</button>
+                <button class="prompt-btn" onclick="quickPrompt('Write an HTML simple button code')">💻 Write HTML button code</button>
+                <button class="prompt-btn" onclick="quickPrompt('Tell me a space mystery fact')">🚀 Space mystery fact</button>
+                <button class="prompt-btn" onclick="quickPrompt('Give me a funny programming joke')">😂 Programming joke</button>
+            </div>
+        </div>
         <div class="typing-indicator" id="loading">s ai Pro thinking... ⚡</div>
     </div>
 
@@ -121,6 +137,8 @@
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const loading = document.getElementById('loading');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const clearBtn = document.getElementById('clear-btn');
         
         const uploadBtn = document.getElementById('upload-btn');
         const fileInput = document.getElementById('file-input');
@@ -130,7 +148,7 @@
 
         let selectedImageBase64 = null;
 
-        // Mute Button Logic 🔇
+        // Mute Button Logic
         let isMuted = false;
         const muteBtn = document.getElementById('mute-btn');
         muteBtn.addEventListener('click', () => {
@@ -139,7 +157,15 @@
             if(isMuted) window.speechSynthesis.cancel();
         });
 
-        // Theme Changer Logic 🎨
+        // 🗑️ Clear Chat Logic
+        clearBtn.addEventListener('click', () => {
+            // Delete all messages except the welcome screen and loader
+            const messages = chatBox.querySelectorAll('.message');
+            messages.forEach(msg => msg.remove());
+            welcomeScreen.style.display = 'flex'; // Reshow quick prompts
+        });
+
+        // Theme Changer Logic
         document.getElementById('theme-selector').addEventListener('change', function() {
             if(this.value === 'default') {
                 document.body.style.background = "url('1.png') no-repeat center center fixed";
@@ -151,10 +177,8 @@
             }
         });
 
-        // 📎 Trigger hidden file input on click
         uploadBtn.addEventListener('click', () => fileInput.click());
 
-        // Handle image selection and create Base64 string
         fileInput.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -162,13 +186,12 @@
                 reader.onload = function(e) {
                     selectedImageBase64 = e.target.result;
                     imgPreviewSrc.src = e.target.result;
-                    previewBox.style.display = 'flex'; // Show preview bar
+                    previewBox.style.display = 'flex';
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        // Cancel Selected Image
         cancelImgBtn.addEventListener('click', () => {
             selectedImageBase64 = null;
             fileInput.value = '';
@@ -178,12 +201,34 @@
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
         sendBtn.addEventListener('click', () => { sendMessage(); });
 
+        // 💡 Quick Prompt Click Handler
+        function quickPrompt(promptText) {
+            userInput.value = promptText;
+            sendMessage();
+        }
+
         function appendMessage(text, isUser) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
-            msgDiv.innerText = text;
             chatBox.insertBefore(msgDiv, loading);
             chatBox.scrollTop = chatBox.scrollHeight;
+
+            if (isUser) {
+                msgDiv.innerText = text;
+            } else {
+                // ✨ Typing Animation Effect for AI responses
+                let i = 0;
+                msgDiv.innerText = '';
+                function typeWriter() {
+                    if (i < text.length) {
+                        msgDiv.innerText += text.charAt(i);
+                        i++;
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                        setTimeout(typeWriter, 15); // Adjust typing speed here
+                    }
+                }
+                typeWriter();
+            }
         }
 
         function appendImageMessage(imageUrl, isUser = false) {
@@ -198,7 +243,8 @@
             const text = userInput.value.trim();
             if (!text && !selectedImageBase64) return;
 
-            // If user uploaded an image, display it in the chat box
+            welcomeScreen.style.display = 'none'; // Hide welcome screen upon first text
+
             if (selectedImageBase64) {
                 appendImageMessage(selectedImageBase64, true);
             }
@@ -212,7 +258,7 @@
 
             const lowerText = text.toLowerCase();
 
-            // 🚀 Multi-AI Routing: Flux Image Generation (Only runs if no input image is uploaded)
+            // Multi-AI Routing: Flux Image Generation
             if (!selectedImageBase64 && (lowerText.includes("image") || lowerText.includes("photo") || lowerText.includes("picture") || lowerText.includes("draw"))) {
                 const imageUrl = `https://image.pollinations.ai/p/${encodeURIComponent(text)}?model=flux&width=1024&height=1024`;
                 setTimeout(() => {
@@ -227,14 +273,13 @@
                 return;
             }
 
-            // 🧠 Text + Image Response via Render Backend (Gemini Multi-modal)
+            // Text + Image Response via Render Backend
             try {
                 const payload = { message: text };
                 if (selectedImageBase64) {
-                    payload.image = selectedImageBase64; // Sent to backend to process via Gemini Vision
+                    payload.image = selectedImageBase64;
                 }
 
-                // Clear image selector state
                 selectedImageBase64 = null;
                 fileInput.value = '';
                 previewBox.style.display = 'none';
