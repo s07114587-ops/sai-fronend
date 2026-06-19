@@ -78,9 +78,6 @@
         .weather-temp { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px; }
         .weather-details { font-size: 11px; color: #aaa; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 6px; display: flex; justify-content: space-between; }
 
-        /* ⚽ Football Widget Container */
-        .football-widget-container { width: 100%; max-width: 500px; height: 450px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(160, 114, 255, 0.3); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); margin-top: 5px; }
-
         /* 💡 Quick Prompts Grid */
         .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 600px; padding: 20px; }
         .welcome-box h2 { font-size: 24px; color: #a072ff; margin-bottom: 10px; }
@@ -94,7 +91,7 @@
         .image-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #a072ff; }
         .cancel-img-btn { background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
 
-        /* Input Area (তোমার অরিজিনাল কোডটাই রেখেছি) */
+        /* Input Area */
         .input-area { display: flex; padding: 15px 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); gap: 10px; align-items: center; }
         .input-area input[type="text"] { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; padding: 15px; border-radius: 25px; outline: none; font-size: 15px; }
         .input-area input[type="text"]:focus { border-color: #6f42c1; background: rgba(255, 255, 255, 0.1); }
@@ -121,7 +118,6 @@
             <a href="#" class="privacy-link" onclick="alert('Privacy Policy: Your data is 100% safe. s ai Pro respects your privacy!')">Privacy Policy</a>
         </div>
     </div>
-    
     <div class="chat-container" id="chat-box">
         <div class="welcome-box" id="welcome-screen">
             <h2>Welcome to s ai Pro</h2>
@@ -181,7 +177,7 @@
 
         // Clear Chat Logic
         clearBtn.addEventListener('click', () => {
-            const messages = chatBox.querySelectorAll('.message, .weather-card, .football-widget-container');
+            const messages = chatBox.querySelectorAll('.message, .weather-card');
             messages.forEach(msg => msg.remove());
             welcomeScreen.style.display = 'flex';
         });
@@ -219,7 +215,6 @@
             previewBox.style.display = 'none';
         });
 
-        // ব্রো, তোমার অরিজিনাল কীবোর্ড আর বাটন ইভেন্ট লিসেনার এখানে রাখা হলো
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
         sendBtn.addEventListener('click', () => { sendMessage(); });
 
@@ -252,10 +247,12 @@
             }
         }
 
+        // 🌤️ Function to append custom HTML Weather Card instead of raw text!
         function appendWeatherCard(city, condition, temp, humidity, wind) {
             const card = document.createElement('div');
             card.className = 'weather-card ai-msg';
             
+            // Map common keywords to custom emoji icons
             let icon = "☁️";
             const condLower = condition.toLowerCase();
             if(condLower.includes("sun") || condLower.includes("clear")) icon = "☀️";
@@ -274,19 +271,6 @@
                 </div>
             `;
             chatBox.insertBefore(card, loading);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function appendFootballWidget() {
-            const widgetContainer = document.createElement('div');
-            widgetContainer.className = 'football-widget-container ai-msg';
-            widgetContainer.innerHTML = `
-                <iframe src="https://www.scoreaxis.com/widget/live-scores?autoHeight=false&links=false&bodyBackground=%23000000&font=Poppins" 
-                        style="width:100%; height:100%; border:none; background:#000000;" 
-                        title="Live Football Scores">
-                </iframe>
-            `;
-            chatBox.insertBefore(widgetContainer, loading);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -317,7 +301,7 @@
 
             const lowerText = text.toLowerCase();
 
-            // 🚀 Image Generation
+            // 🚀 Multi-AI Routing: Flux Image Generation
             if (!selectedImageBase64 && (lowerText.includes("image") || lowerText.includes("photo") || lowerText.includes("picture") || lowerText.includes("draw"))) {
                 const imageUrl = `https://image.pollinations.ai/p/${encodeURIComponent(text)}?model=flux&width=1024&height=1024`;
                 setTimeout(() => {
@@ -332,21 +316,7 @@
                 return;
             }
 
-            // ⚽ Football Widget Bypass
-            if (!selectedImageBase64 && (lowerText.includes("football") || lowerText.includes("score") || lowerText.includes("match"))) {
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    appendFootballWidget();
-                    if(!isMuted) {
-                        const speech = new SpeechSynthesisUtterance("Loading live football updates.");
-                        speech.lang = 'en-US'; 
-                        window.speechSynthesis.speak(speech);
-                    }
-                }, 800);
-                return;
-            }
-
-            // 🌡️ Safe Weather Bypass (Fixed the 4-fetch bug so IP doesn't block)
+            // 🌡️ 🚀 Updated Weather Bypass Engine (Outputs HTML instead of raw code)
             if (!selectedImageBase64 && lowerText.includes("weather")) {
                 let city = "kolkata";
                 const words = lowerText.split(" ");
@@ -356,26 +326,29 @@
                 }
                 
                 try {
-                    const res = await fetch(`https://wttr.in/${city}?format=%C,%t,%h,%w`);
-                    const dataText = await res.text();
+                    // Fetch segmented data values to populate the custom HTML element safely
+                    const resCondition = await fetch(`https://wttr.in/${city}?format=%C`);
+                    const resTemp = await fetch(`https://wttr.in/${city}?format=%t`);
+                    const resHumidity = await fetch(`https://wttr.in/${city}?format=%h`);
+                    const resWind = await fetch(`https://wttr.in/${city}?format=%w`);
                     
-                    if(dataText && dataText.includes(',')) {
-                        const parts = dataText.split(',');
-                        if(parts.length >= 4) {
-                            loading.style.display = 'none';
-                            appendWeatherCard(city, parts[0].trim(), parts[1].trim(), parts[2].trim(), parts[3].trim());
-                            if(!isMuted) {
-                                const speech = new SpeechSynthesisUtterance(`Live metrics synthesized for ${city}. Temperature is ${parts[1].trim()}`);
-                                speech.lang = 'en-US'; 
-                                window.speechSynthesis.speak(speech);
-                            }
-                            return;
-                        }
+                    const condition = (await resCondition.text()).trim();
+                    const temp = (await resTemp.text()).trim();
+                    const humidity = (await resHumidity.text()).trim();
+                    const wind = (await resWind.text()).trim();
+                    
+                    loading.style.display = 'none';
+                    // Render the sleek UI HTML element directly into the chat stream!
+                    appendWeatherCard(city, condition, temp, humidity, wind);
+                    
+                    if(!isMuted) {
+                        const speech = new SpeechSynthesisUtterance(`Live metrics synthesized for ${city}. Temperature is ${temp}`);
+                        speech.lang = 'en-US'; 
+                        window.speechSynthesis.speak(speech);
                     }
-                    throw new Error("API Data format issue");
                 } catch (err) {
                     loading.style.display = 'none';
-                    appendMessage(`Could not sync weather metrics right now. Direct link: https://wttr.in/${city}`, false);
+                    appendMessage("Could not sync weather metrics at this moment. Please try again.", false);
                 }
                 return; 
             }
@@ -387,3 +360,40 @@
                     appendMessage("🎵 Processing audio wavelengths... To compose, generate, and stream high-fidelity AI music with full vocals and custom instruments, please explore: https://suno.com or https://udio.com directly!", false);
                 }, 1000);
                 return;
+            }
+
+            // 🧠 Text Response via Render Backend
+            try {
+                const payload = { message: text };
+                if (selectedImageBase64) {
+                    payload.image = selectedImageBase64;
+                }
+
+                selectedImageBase64 = null;
+                fileInput.value = '';
+                previewBox.style.display = 'none';
+
+                const response = await fetch(`${RENDER_BACKEND_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                loading.style.display = 'none';
+                appendMessage(data.reply, false);
+                
+                if(!isMuted) {
+                    const speech = new SpeechSynthesisUtterance(data.reply); 
+                    speech.lang = 'en-US'; 
+                    window.speechSynthesis.speak(speech);
+                }
+
+            } catch (error) {
+                loading.style.display = 'none';
+                appendMessage("Server connection error! Please check your Render backend link or try again in a few moments.", false);
+            }
+        }
+    </script>
+</body>
+</htm
