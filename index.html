@@ -18,7 +18,7 @@
             display: flex; 
             flex-direction: column; 
             overflow: hidden; 
-            transition: background 0.5s ease; /* Smooth transition for theme changer */
+            transition: background 0.5s ease;
         }
         
         /* 🎯 Mobile Background (0.png) */
@@ -41,7 +41,6 @@
         .ribbon-left, .ribbon-right { display: flex; align-items: center; gap: 15px; }
         .brand-name { color: #a072ff; font-weight: bold; font-size: 15px; letter-spacing: 1px;}
         
-        /* Theme Selector & Ribbon Buttons */
         select, .ribbon-btn {
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -65,12 +64,20 @@
         .ai-msg { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
         .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: rgba(0, 0, 0, 0.6); border-radius: 15px; color: #a072ff; font-size: 14px; font-weight: 600; border-bottom-left-radius: 4px; border: 1px solid rgba(160, 114, 255, 0.2); }
         
+        /* Preview Area for Selected Image */
+        .preview-container { display: none; padding: 5px 20px; background: rgba(0, 0, 0, 0.8); align-items: center; gap: 10px; }
+        .image-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #a072ff; }
+        .cancel-img-btn { background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+
         /* Input Area */
         .input-area { display: flex; padding: 15px 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); gap: 10px; align-items: center; }
         .input-area input[type="text"] { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; padding: 15px; border-radius: 25px; outline: none; font-size: 15px; }
         .input-area input[type="text"]:focus { border-color: #6f42c1; background: rgba(255, 255, 255, 0.1); }
         .icon-btn { background: none; border: none; color: #a072ff; font-size: 22px; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .icon-btn:hover { background: #6f42c1; color: white; }
+        
+        /* Hidden file input */
+        #file-input { display: none; }
     </style>
 </head>
 <body>
@@ -92,13 +99,22 @@
     <div class="chat-container" id="chat-box">
         <div class="typing-indicator" id="loading">s ai Pro thinking... ⚡</div>
     </div>
+
+    <div class="preview-container" id="preview-box">
+        <img src="" id="img-preview-src" class="image-preview">
+        <span style="font-size: 12px; color: #ccc;">Image selected ready to upload</span>
+        <button class="cancel-img-btn" id="cancel-img-btn">✕</button>
+    </div>
+
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Ask s ai Pro anything (100K Traffic Load Ready)...">
+        <input type="file" id="file-input" accept="image/*">
+        <button class="icon-btn" id="upload-btn" title="Upload Image">📎</button>
+        
+        <input type="text" id="user-input" placeholder="Ask s ai Pro or send an image (100K Traffic Load Ready)...">
         <button class="icon-btn" id="send-btn">➤</button>
     </div>
 
     <script>
-        // 🔗 Your Render Backend URL 🚀
         const RENDER_BACKEND_URL = "https://si-bakend.onrender.com"; 
 
         const chatBox = document.getElementById('chat-box');
@@ -106,13 +122,21 @@
         const sendBtn = document.getElementById('send-btn');
         const loading = document.getElementById('loading');
         
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileInput = document.getElementById('file-input');
+        const previewBox = document.getElementById('preview-box');
+        const imgPreviewSrc = document.getElementById('img-preview-src');
+        const cancelImgBtn = document.getElementById('cancel-img-btn');
+
+        let selectedImageBase64 = null;
+
         // Mute Button Logic 🔇
         let isMuted = false;
         const muteBtn = document.getElementById('mute-btn');
         muteBtn.addEventListener('click', () => {
             isMuted = !isMuted;
             muteBtn.innerText = isMuted ? "🔇 Muted" : "🔊 Sound On";
-            if(isMuted) window.speechSynthesis.cancel(); // Stops ongoing speech immediately
+            if(isMuted) window.speechSynthesis.cancel();
         });
 
         // Theme Changer Logic 🎨
@@ -121,16 +145,39 @@
                 document.body.style.background = "url('1.png') no-repeat center center fixed";
                 document.body.style.backgroundSize = "cover";
             } else if(this.value === 'hacker') {
-                document.body.style.background = "#0d1117"; // GitHub Hacker Dark Style
+                document.body.style.background = "#0d1117";
             } else if(this.value === 'dark') {
-                document.body.style.background = "#000000"; // Deep Pitch Black
+                document.body.style.background = "#000000";
             }
+        });
+
+        // 📎 Trigger hidden file input on click
+        uploadBtn.addEventListener('click', () => fileInput.click());
+
+        // Handle image selection and create Base64 string
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedImageBase64 = e.target.result;
+                    imgPreviewSrc.src = e.target.result;
+                    previewBox.style.display = 'flex'; // Show preview bar
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Cancel Selected Image
+        cancelImgBtn.addEventListener('click', () => {
+            selectedImageBase64 = null;
+            fileInput.value = '';
+            previewBox.style.display = 'none';
         });
 
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
         sendBtn.addEventListener('click', () => { sendMessage(); });
 
-        // Function to display normal text messages
         function appendMessage(text, isUser) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
@@ -139,55 +186,69 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Function to display generated images 🖼️
-        function appendImageMessage(imageUrl) {
+        function appendImageMessage(imageUrl, isUser = false) {
             const msgDiv = document.createElement('div');
-            msgDiv.className = 'message ai-msg';
-            msgDiv.innerHTML = `<img src="${imageUrl}" alt="Generated by s ai Pro" style="max-width:100%; border-radius:10px; display:block; border: 2px solid #a072ff;">`;
+            msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
+            msgDiv.innerHTML = `<img src="${imageUrl}" style="max-width:100%; max-height:250px; border-radius:10px; display:block; border: 2px solid #a072ff;">`;
             chatBox.insertBefore(msgDiv, loading);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function sendMessage() {
-            const text = userInput.value.trim(); if (!text) return;
-            appendMessage(text, true);
+            const text = userInput.value.trim();
+            if (!text && !selectedImageBase64) return;
+
+            // If user uploaded an image, display it in the chat box
+            if (selectedImageBase64) {
+                appendImageMessage(selectedImageBase64, true);
+            }
+            if (text) {
+                appendMessage(text, true);
+            }
+
             userInput.value = '';
             loading.style.display = 'block';
             chatBox.scrollTop = chatBox.scrollHeight;
 
             const lowerText = text.toLowerCase();
 
-            // 🚀 Multi-AI Routing Logic: Ultra HD Flux Image Generator (Bypasses Render Backend) 🚀
-            if (lowerText.includes("image") || lowerText.includes("photo") || lowerText.includes("picture") || lowerText.includes("draw")) {
-                // Generates high-quality 1024x1024 images instantly using the Flux model
+            // 🚀 Multi-AI Routing: Flux Image Generation (Only runs if no input image is uploaded)
+            if (!selectedImageBase64 && (lowerText.includes("image") || lowerText.includes("photo") || lowerText.includes("picture") || lowerText.includes("draw"))) {
                 const imageUrl = `https://image.pollinations.ai/p/${encodeURIComponent(text)}?model=flux&width=1024&height=1024`;
-                
-                // Simulated slight delay to make the loader look smooth
                 setTimeout(() => {
                     loading.style.display = 'none';
-                    appendImageMessage(imageUrl);
+                    appendImageMessage(imageUrl, false);
                     if(!isMuted) {
                         const speech = new SpeechSynthesisUtterance("Here is the masterpiece you requested!");
                         speech.lang = 'en-US'; 
                         window.speechSynthesis.speak(speech);
                     }
                 }, 1500);
-                return; // Ends execution here so it doesn't call the text backend
+                return;
             }
 
-            // 🧠 Text Response via Render Backend Server (Groq / Gemini)
+            // 🧠 Text + Image Response via Render Backend (Gemini Multi-modal)
             try {
+                const payload = { message: text };
+                if (selectedImageBase64) {
+                    payload.image = selectedImageBase64; // Sent to backend to process via Gemini Vision
+                }
+
+                // Clear image selector state
+                selectedImageBase64 = null;
+                fileInput.value = '';
+                previewBox.style.display = 'none';
+
                 const response = await fetch(`${RENDER_BACKEND_URL}/api/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await response.json();
                 loading.style.display = 'none';
                 appendMessage(data.reply, false);
                 
-                // Voice response if sound is on
                 if(!isMuted) {
                     const speech = new SpeechSynthesisUtterance(data.reply); 
                     speech.lang = 'en-US'; 
