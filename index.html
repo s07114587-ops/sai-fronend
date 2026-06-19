@@ -78,6 +78,18 @@
         .weather-temp { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px; }
         .weather-details { font-size: 11px; color: #aaa; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 6px; display: flex; justify-content: space-between; }
 
+        /* ⚽ Live Football Iframe Widget Container */
+        .football-widget-container {
+            width: 100%;
+            max-width: 500px;
+            height: 450px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(160, 114, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            margin-top: 5px;
+        }
+
         /* 💡 Quick Prompts Grid */
         .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 600px; padding: 20px; }
         .welcome-box h2 { font-size: 24px; color: #a072ff; margin-bottom: 10px; }
@@ -126,7 +138,7 @@
                 <button class="prompt-btn" onclick="quickPrompt('Draw a realistic high quality cat')">🎨 Draw a Cat</button>
                 <button class="prompt-btn" onclick="quickPrompt('Tell me a funny programming joke')">😂 Tell a Joke</button>
                 <button class="prompt-btn" onclick="quickPrompt('weather in kolkata')">🌡️ Today's Weather</button>
-                <button class="prompt-btn" onclick="quickPrompt('Show me live football scores and match updates')">⚽ Live Football Score</button>
+                <button class="prompt-btn" onclick="quickPrompt('football score')">⚽ Live Football Score</button>
                 <button class="prompt-btn" onclick="quickPrompt('Create music / generate an AI song track')">🎵 Create Music</button>
                 <button class="prompt-btn" onclick="quickPrompt('Help me learning HTML and web coding step by step')">📚 Help me Learning</button>
             </div>
@@ -177,7 +189,7 @@
 
         // Clear Chat Logic
         clearBtn.addEventListener('click', () => {
-            const messages = chatBox.querySelectorAll('.message, .weather-card');
+            const messages = chatBox.querySelectorAll('.message, .weather-card, .football-widget-container');
             messages.forEach(msg => msg.remove());
             welcomeScreen.style.display = 'flex';
         });
@@ -247,12 +259,9 @@
             }
         }
 
-        // 🌤️ Function to append custom HTML Weather Card instead of raw text!
         function appendWeatherCard(city, condition, temp, humidity, wind) {
             const card = document.createElement('div');
             card.className = 'weather-card ai-msg';
-            
-            // Map common keywords to custom emoji icons
             let icon = "☁️";
             const condLower = condition.toLowerCase();
             if(condLower.includes("sun") || condLower.includes("clear")) icon = "☀️";
@@ -271,6 +280,22 @@
                 </div>
             `;
             chatBox.insertBefore(card, loading);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // ⚽ Function to append Interactive Live Football Score Widget (No API key needed!)
+        function appendFootballWidget() {
+            const widgetContainer = document.createElement('div');
+            widgetContainer.className = 'football-widget-container ai-msg';
+            
+            // Integrating premium free real-time score provider iframe bypass
+            widgetContainer.innerHTML = `
+                <iframe src="https://www.scoreaxis.com/widget/live-scores?autoHeight=false&links=false&bodyBackground=%23000000&font=Poppins" 
+                        style="width:100%; height:100%; border:none; background:#000000;" 
+                        title="Live Football Scores By s ai Pro">
+                </iframe>
+            `;
+            chatBox.insertBefore(widgetContainer, loading);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -316,7 +341,21 @@
                 return;
             }
 
-            // 🌡️ 🚀 Updated Weather Bypass Engine (Outputs HTML instead of raw code)
+            // ⚽ 🚀 New Multi-AI Routing: Keyless Football Score Widget Integration (Bypass)
+            if (!selectedImageBase64 && (lowerText.includes("football") || lowerText.includes("score") || lowerText.includes("match"))) {
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    appendFootballWidget();
+                    if(!isMuted) {
+                        const speech = new SpeechSynthesisUtterance("Loading live football updates and match timelines.");
+                        speech.lang = 'en-US'; 
+                        window.speechSynthesis.speak(speech);
+                    }
+                }, 800);
+                return;
+            }
+
+            // 🌡️ Multi-AI Routing: Keyless Weather API Integration
             if (!selectedImageBase64 && lowerText.includes("weather")) {
                 let city = "kolkata";
                 const words = lowerText.split(" ");
@@ -326,7 +365,6 @@
                 }
                 
                 try {
-                    // Fetch segmented data values to populate the custom HTML element safely
                     const resCondition = await fetch(`https://wttr.in/${city}?format=%C`);
                     const resTemp = await fetch(`https://wttr.in/${city}?format=%t`);
                     const resHumidity = await fetch(`https://wttr.in/${city}?format=%h`);
@@ -338,7 +376,6 @@
                     const wind = (await resWind.text()).trim();
                     
                     loading.style.display = 'none';
-                    // Render the sleek UI HTML element directly into the chat stream!
                     appendWeatherCard(city, condition, temp, humidity, wind);
                     
                     if(!isMuted) {
@@ -356,44 +393,3 @@
             // 🎵 Special Music Bypass
             if (lowerText.includes("music") || lowerText.includes("song")) {
                 setTimeout(() => {
-                    loading.style.display = 'none';
-                    appendMessage("🎵 Processing audio wavelengths... To compose, generate, and stream high-fidelity AI music with full vocals and custom instruments, please explore: https://suno.com or https://udio.com directly!", false);
-                }, 1000);
-                return;
-            }
-
-            // 🧠 Text Response via Render Backend
-            try {
-                const payload = { message: text };
-                if (selectedImageBase64) {
-                    payload.image = selectedImageBase64;
-                }
-
-                selectedImageBase64 = null;
-                fileInput.value = '';
-                previewBox.style.display = 'none';
-
-                const response = await fetch(`${RENDER_BACKEND_URL}/api/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await response.json();
-                loading.style.display = 'none';
-                appendMessage(data.reply, false);
-                
-                if(!isMuted) {
-                    const speech = new SpeechSynthesisUtterance(data.reply); 
-                    speech.lang = 'en-US'; 
-                    window.speechSynthesis.speak(speech);
-                }
-
-            } catch (error) {
-                loading.style.display = 'none';
-                appendMessage("Server connection error! Please check your Render backend link or try again in a few moments.", false);
-            }
-        }
-    </script>
-</body>
-</htm
