@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-THVBCNML2P"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-THVBCNML2P"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-THVBCNML2P');
-</script>
+      gtag('config', 'G-THVBCNML2P');
+    </script>
     <meta name="google-site-verification" content="bPlFVhR9cKzjkQqC2gry25JcQFJasdVM0U4biOUw1fo" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +22,7 @@
             background: url('1.png') no-repeat center center fixed; 
             background-size: cover;
             color: #ffffff; 
-            height: 100vh; 
+            height: 100dvh; /* 💡 Fixed: Mobile viewport height layout bug */
             display: flex; 
             flex-direction: column; 
             overflow: hidden; 
@@ -102,7 +101,17 @@
         .cancel-img-btn { background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
 
         /* Input Area */
-        .input-area { display: flex; padding: 15px 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); gap: 10px; align-items: center; }
+        .input-area { 
+            display: flex; 
+            padding: 15px 20px; 
+            background: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(10px); 
+            gap: 10px; 
+            align-items: center; 
+            position: sticky; /* 💡 Fixed: Stay at the absolute bottom on mobile */
+            bottom: 0;
+            width: 100%;
+        }
         .input-area input[type="text"] { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; padding: 15px; border-radius: 25px; outline: none; font-size: 15px; }
         .input-area input[type="text"]:focus { border-color: #6f42c1; background: rgba(255, 255, 255, 0.1); }
         .icon-btn { background: none; border: none; color: #a072ff; font-size: 22px; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
@@ -261,7 +270,6 @@
             const card = document.createElement('div');
             card.className = 'weather-card ai-msg';
             
-            // Map common keywords to custom emoji icons
             let icon = "☁️";
             const condLower = condition.toLowerCase();
             if(condLower.includes("sun") || condLower.includes("clear")) icon = "☀️";
@@ -325,7 +333,7 @@
                 return;
             }
 
-            // 🌡️ 🚀 Updated Weather Bypass Engine (Outputs HTML instead of raw code)
+            // 🌡️ 🚀 Updated Weather Bypass Engine
             if (!selectedImageBase64 && lowerText.includes("weather")) {
                 let city = "kolkata";
                 const words = lowerText.split(" ");
@@ -335,7 +343,6 @@
                 }
                 
                 try {
-                    // Fetch segmented data values to populate the custom HTML element safely
                     const resCondition = await fetch(`https://wttr.in/${city}?format=%C`);
                     const resTemp = await fetch(`https://wttr.in/${city}?format=%t`);
                     const resHumidity = await fetch(`https://wttr.in/${city}?format=%h`);
@@ -347,7 +354,6 @@
                     const wind = (await resWind.text()).trim();
                     
                     loading.style.display = 'none';
-                    // Render the sleek UI HTML element directly into the chat stream!
                     appendWeatherCard(city, condition, temp, humidity, wind);
                     
                     if(!isMuted) {
@@ -394,15 +400,4 @@
                 
                 if(!isMuted) {
                     const speech = new SpeechSynthesisUtterance(data.reply); 
-                    speech.lang = 'en-US'; 
-                    window.speechSynthesis.speak(speech);
-                }
-
-            } catch (error) {
-                loading.style.display = 'none';
-                appendMessage("Server connection error! Please check your Render backend link or try again in a few moments.", false);
-            }
-        }
-    </script>
-</body>
-</html>
+                    window.speechSyn
