@@ -10,7 +10,7 @@
     </script>
     <meta name="google-site-verification" content="bPlFVhR9cKzjkQqC2gry25JcQFJasdVM0U4biOUw1fo" />
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link class="favicon" rel="icon" type="image/png" href="111.png">
     <title>s ai Pro - World's Most Private AI</title>
     <style>
@@ -106,7 +106,7 @@
         .image-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #a072ff; }
         .cancel-img-btn { background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
 
-        /* Input Area (Restored to safe flex layout) */
+        /* Input Area */
         .input-area { 
             display: flex; 
             padding: 15px 20px; 
@@ -171,7 +171,11 @@
     </div>
 
     <script>
-        const RENDER_BACKEND_URL = "https://si-bakend.onrender.com"; 
+        // 🚀 Multi-Backend Jugaad Array
+        const BACKENDS = [
+            "https://shubhomoy-ai-bakend-sai-lol.vercel.app/api/chat", // ১ম পছন্দ: Vercel (সুপার ফাস্ট, ঘুমায় না)
+            "https://si-bakend.onrender.com/api/chat"                  // ২য় পছন্দ: Render (ব্যাকআপ)
+        ];
 
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
@@ -189,7 +193,6 @@
         let selectedImageBase64 = null;
         let isMuted = false;
 
-        // Theme Changer Mechanism Fix
         document.getElementById('theme-selector').addEventListener('change', function() {
             if(this.value === 'default') {
                 document.body.style.background = "url('1.png') no-repeat center center fixed";
@@ -201,7 +204,6 @@
             }
         });
 
-        // Mute Button Logic with Safety
         const muteBtn = document.getElementById('mute-btn');
         muteBtn.addEventListener('click', () => {
             isMuted = !isMuted;
@@ -211,7 +213,6 @@
             }
         });
 
-        // Clear Chat Logic
         clearBtn.addEventListener('click', () => {
             const messages = chatBox.querySelectorAll('.message, .weather-card');
             messages.forEach(msg => msg.remove());
@@ -383,7 +384,7 @@
                 return;
             }
 
-            // Main Chat Backend
+            // 🔥 Main Chat Backend with Vercel & Render Jugaad 🔥
             try {
                 const payload = { message: text };
                 if (selectedImageBase64) {
@@ -394,25 +395,19 @@
                 fileInput.value = '';
                 previewBox.style.display = 'none';
 
-                const response = await fetch(`${RENDER_BACKEND_URL}/api/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                let replyReceived = false;
 
-                const data = await response.json();
-                loading.style.display = 'none';
-                appendMessage(data.reply, false);
-                safeSpeak(data.reply);
-                
-            } catch (err) {
-                loading.style.display = 'none';
-                appendMessage("Connection latency detected on Render cluster. Re-initializing...", false);
-            }
-        }
-    </script>
-</body>
-    <head>
-  <Shubhomoy name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-</head>
-</html>
+                // লুপ চালিয়ে প্রথমে ভার্সেল, পরে রেন্ডারে ট্রাই করবে
+                for (let apiUrl of BACKENDS) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            loading.style.display = 'none';
+                            appendMessage(data.reply, false);
+                            safeSpeak(data.reply);
