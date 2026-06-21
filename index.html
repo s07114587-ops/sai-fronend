@@ -174,66 +174,191 @@
         <button class="cancel-img-btn" id="cancel-img-btn">✕</button>
     </div>
 
-    <script>
-        // অন্য সব ভেরিয়েবল এবং ফাংশন যা আগে ছিল...
-        // ... (theme-selector, mute-btn, clear-btn এই ফাংশনগুলো যেমন আছে তেমনই থাকবে)
+    <div class="input-area">
+        <input type="file" id="file-input" accept="image/*">
+        <button class="icon-btn" id="upload-btn" title="Upload Image">📎</button>
+        
+        <input type="text" id="user-input" placeholder="Ask s ai Pro anything...">
+        <button class="icon-btn" id="send-btn">➤</button>
+    </div>
 
-        // ঠিক এই জায়গায় আগের sendMessage ফাংশনটা ডিলিট করে নিচেরটা বসা:
+    <script>
+        // 🚀 ONLY VERCEL API as requested! No more fallbacks.
+        const API_URL = "https://shubhomoy-ai-bakend-sai-lol.vercel.app/api/chat";
+
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const loading = document.getElementById('loading');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const clearBtn = document.getElementById('clear-btn');
+        
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileInput = document.getElementById('file-input');
+        const previewBox = document.getElementById('preview-box');
+        const imgPreviewSrc = document.getElementById('img-preview-src');
+        const cancelImgBtn = document.getElementById('cancel-img-btn');
+
+        let selectedImageBase64 = null;
+        let isMuted = false;
+
+        document.getElementById('theme-selector').addEventListener('change', function() {
+            if(this.value === 'default') {
+                document.body.style.background = "url('1.webp') no-repeat center center fixed";
+                document.body.style.backgroundSize = "cover";
+            } else if(this.value === 'hacker') {
+                document.body.style.background = "#0d1117";
+            } else if(this.value === 'dark') {
+                document.body.style.background = "#000000";
+            }
+        });
+
+        const muteBtn = document.getElementById('mute-btn');
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            muteBtn.innerText = isMuted ? "🔇 Muted" : "🔊 Sound On";
+            if(isMuted && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            const messages = chatBox.querySelectorAll('.message, .weather-card');
+            messages.forEach(msg => msg.remove());
+            welcomeScreen.style.display = 'flex';
+        });
+
+        uploadBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedImageBase64 = e.target.result;
+                    imgPreviewSrc.src = e.target.result;
+                    previewBox.style.display = 'flex';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        cancelImgBtn.addEventListener('click', () => {
+            selectedImageBase64 = null;
+            fileInput.value = '';
+            previewBox.style.display = 'none';
+        });
+
+        userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
+        sendBtn.addEventListener('click', () => { sendMessage(); });
+
+        function quickPrompt(promptText) {
+            userInput.value = promptText;
+            sendMessage();
+        }
+
+        function appendMessage(text, isUser) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
+            chatBox.insertBefore(msgDiv, loading);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            if (isUser) {
+                msgDiv.innerText = text;
+            } else {
+                let i = 0;
+                msgDiv.innerText = '';
+                function typeWriter() {
+                    if (i < text.length) {
+                        msgDiv.style.whiteSpace = 'pre-wrap'; 
+                        msgDiv.innerText += text.charAt(i);
+                        i++;
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                        setTimeout(typeWriter, 12);
+                    }
+                }
+                typeWriter();
+            }
+        }
+
+        function appendImageMessage(imageUrl, isUser = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
+            msgDiv.innerHTML = `<img src="${imageUrl}" style="max-width:100%; max-height:250px; border-radius:10px; display:block; border: 2px solid #a072ff;">`;
+            chatBox.insertBefore(msgDiv, loading);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function safeSpeak(text) {
+            if(!isMuted && 'speechSynthesis' in window) {
+                try {
+                    const speech = new SpeechSynthesisUtterance(text);
+                    speech.lang = 'en-US'; 
+                    window.speechSynthesis.speak(speech);
+                } catch(e) { console.log("Speech error"); }
+            }
+        }
+
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text && !selectedImageBase64) return;
 
             welcomeScreen.style.display = 'none';
-            if (selectedImageBase64) appendImageMessage(selectedImageBase64, true);
-            if (text) appendMessage(text, true);
+
+            if (selectedImageBase64) {
+                appendImageMessage(selectedImageBase64, true);
+            }
+            if (text) {
+                appendMessage(text, true);
+            }
 
             userInput.value = '';
             loading.style.display = 'block';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            const payload = { message: text };
-            if (selectedImageBase64) payload.image = selectedImageBase64;
-            
-            selectedImageBase64 = null;
-            fileInput.value = '';
-            previewBox.style.display = 'none';
+            const lowerText = text.toLowerCase();
 
-            // এখানে আমরা দুটো ব্যাকএন্ড রেখেছি
-            const backends = [
-                "https://shubhomoy-ai-bakend-sai-lol.vercel.app/api/chat",
-                "https://si-bakend.onrender.com/api/chat"
-            ];
-
-            let success = false;
-
-            for (let url of backends) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        loading.style.display = 'none';
-                        appendMessage(data.reply, false);
-                        safeSpeak(data.reply);
-                        success = true;
-                        break; 
-                    }
-                } catch (err) {
-                    console.log("Error with " + url + ", trying next...");
-                }
+            // Image Check
+            if (!selectedImageBase64 && (lowerText.includes("image") || lowerText.includes("draw"))) {
+                const imageUrl = `https://image.pollinations.ai/p/${encodeURIComponent(text)}?model=flux&width=1024&height=1024`;
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    appendImageMessage(imageUrl, false);
+                }, 1500);
+                return;
             }
 
-            if (!success) {
+            // Chat API Call
+            try {
+                const payload = { message: text };
+                if (selectedImageBase64) {
+                    payload.image = selectedImageBase64;
+                }
+
+                selectedImageBase64 = null;
+                fileInput.value = '';
+                previewBox.style.display = 'none';
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    loading.style.display = 'none';
+                    appendMessage(data.reply, false);
+                    safeSpeak(data.reply);
+                } else {
+                    throw new Error("Server error");
+                }
+                
+            } catch (err) {
                 loading.style.display = 'none';
-                appendMessage("দুঃখিত ভাই, দুটো সার্ভারই এখন ডাউন আছে। একটু পরে আবার ট্রাই কর!", false);
+                appendMessage("Vercel Server Error! Check if your backend is running properly.", false);
             }
         }
-        
-        // বাকি ফাংশনগুলো (appendMessage, safeSpeak, ইত্যাদি) এর নিচে যেমন ছিল তেমনই থাকবে।
     </script>
 </body>
 </html>
