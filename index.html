@@ -10,8 +10,7 @@
     </script>
     <meta name="google-site-verification" content="bPlFVhR9cKzjkQqC2gry25JcQFJasdVM0U4biOUw1fo" />
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="s ai Pro - The world's most private and fast AI assistant powered by Groq and Gemini.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link class="favicon" rel="icon" type="image/png" href="111.png">
     <title>s ai Pro - World's Most Private AI</title>
     <style>
@@ -50,7 +49,6 @@
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 13px;
-            position: relative; /* Ensures z-index works */
             z-index: 10;
         }
         .ribbon-left, .ribbon-right { display: flex; align-items: center; gap: 10px; }
@@ -73,7 +71,7 @@
         .privacy-link:hover { color: #a072ff; text-decoration: underline; }
 
         /* Chat Container */
-        .chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: rgba(11, 15, 25, 0.4); position: relative; z-index: 1; }
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: rgba(11, 15, 25, 0.4); }
         .message { max-width: 80%; padding: 12px 18px; border-radius: 18px; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
         .user-msg { background: linear-gradient(135deg, #533190 0%, #3e1e75 100%); align-self: flex-end; border-bottom-right-radius: 4px; }
         .ai-msg { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
@@ -108,7 +106,7 @@
         .image-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #a072ff; }
         .cancel-img-btn { background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
 
-        /* Input Area */
+        /* Input Area (Restored to safe flex layout) */
         .input-area { 
             display: flex; 
             padding: 15px 20px; 
@@ -117,8 +115,6 @@
             gap: 10px; 
             align-items: center; 
             width: 100%;
-            position: relative;
-            z-index: 10;
         }
         .input-area input[type="text"] { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; padding: 15px; border-radius: 25px; outline: none; font-size: 15px; }
         .input-area input[type="text"]:focus { border-color: #6f42c1; background: rgba(255, 255, 255, 0.1); }
@@ -133,7 +129,7 @@
     <div class="top-ribbon">
         <div class="ribbon-left">
             <span class="brand-name">s ai Pro</span>
-            <select id="theme-selector" aria-label="Select Theme">
+            <select id="theme-selector">
                 <option value="default">🌌 Default Theme</option>
                 <option value="hacker">💻 Hacker Mode</option>
                 <option value="dark">🌙 Dark Mode</option>
@@ -161,17 +157,17 @@
     </div>
 
     <div class="preview-container" id="preview-box">
-        <img src="" id="img-preview-src" class="image-preview" alt="Selected file preview">
+        <img src="" id="img-preview-src" class="image-preview">
         <span style="font-size: 12px; color: #ccc;">Image selected ready to upload</span>
-        <button class="cancel-img-btn" id="cancel-img-btn" aria-label="Cancel image selection">✕</button>
+        <button class="cancel-img-btn" id="cancel-img-btn">✕</button>
     </div>
 
     <div class="input-area">
-        <input type="file" id="file-input" accept="image/*" aria-label="Upload file">
-        <button class="icon-btn" id="upload-btn" title="Upload Image" aria-label="Upload Image">📎</button>
+        <input type="file" id="file-input" accept="image/*">
+        <button class="icon-btn" id="upload-btn" title="Upload Image">📎</button>
         
-        <input type="text" id="user-input" placeholder="Ask s ai Pro anything..." aria-label="Message input">
-        <button class="icon-btn" id="send-btn" aria-label="Send message">➤</button>
+        <input type="text" id="user-input" placeholder="Ask s ai Pro anything...">
+        <button class="icon-btn" id="send-btn">➤</button>
     </div>
 
     <script>
@@ -193,9 +189,10 @@
         let selectedImageBase64 = null;
         let isMuted = false;
 
+        // Theme Changer Mechanism Fix
         document.getElementById('theme-selector').addEventListener('change', function() {
             if(this.value === 'default') {
-                document.body.style.background = "url('1.webp') no-repeat center center fixed";
+                document.body.style.background = "url('1.png') no-repeat center center fixed";
                 document.body.style.backgroundSize = "cover";
             } else if(this.value === 'hacker') {
                 document.body.style.background = "#0d1117";
@@ -204,6 +201,7 @@
             }
         });
 
+        // Mute Button Logic with Safety
         const muteBtn = document.getElementById('mute-btn');
         muteBtn.addEventListener('click', () => {
             isMuted = !isMuted;
@@ -213,6 +211,7 @@
             }
         });
 
+        // Clear Chat Logic
         clearBtn.addEventListener('click', () => {
             const messages = chatBox.querySelectorAll('.message, .weather-card');
             messages.forEach(msg => msg.remove());
@@ -300,7 +299,7 @@
         function appendImageMessage(imageUrl, isUser = false) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
-            msgDiv.innerHTML = `<img src="${imageUrl}" alt="AI generated content" style="max-width:100%; max-height:250px; border-radius:10px; display:block; border: 2px solid #a072ff;">`;
+            msgDiv.innerHTML = `<img src="${imageUrl}" style="max-width:100%; max-height:250px; border-radius:10px; display:block; border: 2px solid #a072ff;">`;
             chatBox.insertBefore(msgDiv, loading);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
@@ -407,3 +406,13 @@
                 safeSpeak(data.reply);
                 
             } catch (err) {
+                loading.style.display = 'none';
+                appendMessage("Connection latency detected on Render cluster. Re-initializing...", false);
+            }
+        }
+    </script>
+</body>
+    <head>
+  <Shubhomoy name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+</head>
+</html>
