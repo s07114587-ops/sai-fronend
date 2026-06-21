@@ -18,9 +18,9 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
         
-        /* 💡 100% Safe Mobile Layout Fix */
+        /* 100% Safe Mobile Layout Fix */
         html, body {
-            height: 100%;
+            height: 100dvh; /* Changed to dvh for better mobile support */
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -39,7 +39,7 @@
             body { background: url('0.webp') no-repeat center center fixed; background-size: cover; }
         }
         
-        /* 🎀 Slim Top Ribbon Design */
+        /* Slim Top Ribbon Design */
         .top-ribbon {
             display: flex;
             justify-content: space-between;
@@ -47,9 +47,11 @@
             padding: 8px 20px;
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 13px;
-            z-index: 10;
+            position: relative;
+            z-index: 100; /* Force to top */
         }
         .ribbon-left, .ribbon-right { display: flex; align-items: center; gap: 10px; }
         .brand-name { color: #a072ff; font-weight: bold; font-size: 15px; letter-spacing: 1px;}
@@ -71,16 +73,17 @@
         .privacy-link:hover { color: #a072ff; text-decoration: underline; }
 
         /* Chat Container */
-        .chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: rgba(11, 15, 25, 0.4); }
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: rgba(11, 15, 25, 0.4); position: relative; z-index: 1; }
         .message { max-width: 80%; padding: 12px 18px; border-radius: 18px; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
         .user-msg { background: linear-gradient(135deg, #533190 0%, #3e1e75 100%); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .ai-msg { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
+        .ai-msg { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; border-bottom-left-radius: 4px; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
         .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: rgba(0, 0, 0, 0.6); border-radius: 15px; color: #a072ff; font-size: 14px; font-weight: 600; border-bottom-left-radius: 4px; border: 1px solid rgba(160, 114, 255, 0.2); }
         
-        /* 🌤️ Interactive HTML Weather Card */
+        /* Interactive HTML Weather Card */
         .weather-card {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
             padding: 15px 20px;
@@ -93,8 +96,8 @@
         .weather-temp { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px; }
         .weather-details { font-size: 11px; color: #aaa; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 6px; display: flex; justify-content: space-between; }
 
-        /* 💡 Quick Prompts Grid */
-        .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 600px; padding: 20px; }
+        /* Quick Prompts Grid */
+        .welcome-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; max-width: 600px; padding: 20px; position: relative; z-index: 10; }
         .welcome-box h2 { font-size: 24px; color: #a072ff; margin-bottom: 10px; }
         .welcome-box p { font-size: 14px; color: #ccc; margin-bottom: 20px; }
         .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
@@ -102,7 +105,7 @@
         .prompt-btn:hover { background: rgba(111, 66, 193, 0.3); border-color: #6f42c1; }
 
         /* Preview Area */
-        .preview-container { display: none; padding: 5px 20px; background: rgba(0, 0, 0, 0.8); align-items: center; gap: 10px; }
+        .preview-container { display: none; padding: 5px 20px; background: rgba(0, 0, 0, 0.8); align-items: center; gap: 10px; position: relative; z-index: 100; }
         .image-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #a072ff; }
         .cancel-img-btn { background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
 
@@ -112,13 +115,16 @@
             padding: 15px 20px; 
             background: rgba(0, 0, 0, 0.85); 
             backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
             gap: 10px; 
             align-items: center; 
             width: 100%;
+            position: relative;
+            z-index: 100; /* Force to top */
         }
-        .input-area input[type="text"] { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; padding: 15px; border-radius: 25px; outline: none; font-size: 15px; }
+        .input-area input[type="text"] { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; padding: 15px; border-radius: 25px; outline: none; font-size: 15px; position: relative; z-index: 101; }
         .input-area input[type="text"]:focus { border-color: #6f42c1; background: rgba(255, 255, 255, 0.1); }
-        .icon-btn { background: none; border: none; color: #a072ff; font-size: 22px; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .icon-btn { background: none; border: none; color: #a072ff; font-size: 22px; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; position: relative; z-index: 101; }
         .icon-btn:hover { background: #6f42c1; color: white; }
         
         #file-input { display: none; }
@@ -158,256 +164,3 @@
 
     <div class="preview-container" id="preview-box">
         <img src="" id="img-preview-src" class="image-preview">
-        <span style="font-size: 12px; color: #ccc;">Image selected ready to upload</span>
-        <button class="cancel-img-btn" id="cancel-img-btn">✕</button>
-    </div>
-
-    <div class="input-area">
-        <input type="file" id="file-input" accept="image/*">
-        <button class="icon-btn" id="upload-btn" title="Upload Image">📎</button>
-        
-        <input type="text" id="user-input" placeholder="Ask s ai Pro anything...">
-        <button class="icon-btn" id="send-btn">➤</button>
-    </div>
-
-    <script>
-        // 🚀 Multi-Backend Jugaad Array
-        const BACKENDS = [
-            "https://shubhomoy-ai-bakend-sai-lol.vercel.app/api/chat", // ১ম পছন্দ: Vercel (সুপার ফাস্ট, ঘুমায় না)
-            "https://si-bakend.onrender.com/api/chat"                  // ২য় পছন্দ: Render (ব্যাকআপ)
-        ];
-
-        const chatBox = document.getElementById('chat-box');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const loading = document.getElementById('loading');
-        const welcomeScreen = document.getElementById('welcome-screen');
-        const clearBtn = document.getElementById('clear-btn');
-        
-        const uploadBtn = document.getElementById('upload-btn');
-        const fileInput = document.getElementById('file-input');
-        const previewBox = document.getElementById('preview-box');
-        const imgPreviewSrc = document.getElementById('img-preview-src');
-        const cancelImgBtn = document.getElementById('cancel-img-btn');
-
-        let selectedImageBase64 = null;
-        let isMuted = false;
-
-        document.getElementById('theme-selector').addEventListener('change', function() {
-            if(this.value === 'default') {
-                document.body.style.background = "url('1.png') no-repeat center center fixed";
-                document.body.style.backgroundSize = "cover";
-            } else if(this.value === 'hacker') {
-                document.body.style.background = "#0d1117";
-            } else if(this.value === 'dark') {
-                document.body.style.background = "#000000";
-            }
-        });
-
-        const muteBtn = document.getElementById('mute-btn');
-        muteBtn.addEventListener('click', () => {
-            isMuted = !isMuted;
-            muteBtn.innerText = isMuted ? "🔇 Muted" : "🔊 Sound On";
-            if(isMuted && 'speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-        });
-
-        clearBtn.addEventListener('click', () => {
-            const messages = chatBox.querySelectorAll('.message, .weather-card');
-            messages.forEach(msg => msg.remove());
-            welcomeScreen.style.display = 'flex';
-        });
-
-        uploadBtn.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    selectedImageBase64 = e.target.result;
-                    imgPreviewSrc.src = e.target.result;
-                    previewBox.style.display = 'flex';
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        cancelImgBtn.addEventListener('click', () => {
-            selectedImageBase64 = null;
-            fileInput.value = '';
-            previewBox.style.display = 'none';
-        });
-
-        userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
-        sendBtn.addEventListener('click', () => { sendMessage(); });
-
-        function quickPrompt(promptText) {
-            userInput.value = promptText;
-            sendMessage();
-        }
-
-        function appendMessage(text, isUser) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
-            chatBox.insertBefore(msgDiv, loading);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            if (isUser) {
-                msgDiv.innerText = text;
-            } else {
-                let i = 0;
-                msgDiv.innerText = '';
-                function typeWriter() {
-                    if (i < text.length) {
-                        msgDiv.style.whiteSpace = 'pre-wrap'; 
-                        msgDiv.innerText += text.charAt(i);
-                        i++;
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                        setTimeout(typeWriter, 12);
-                    }
-                }
-                typeWriter();
-            }
-        }
-
-        function appendWeatherCard(city, condition, temp, humidity, wind) {
-            const card = document.createElement('div');
-            card.className = 'weather-card ai-msg';
-            
-            let icon = "☁️";
-            const condLower = condition.toLowerCase();
-            if(condLower.includes("sun") || condLower.includes("clear")) icon = "☀️";
-            else if(condLower.includes("rain") || condLower.includes("shower")) icon = "🌧️";
-            else if(condLower.includes("thunder")) icon = "⛈️";
-            else if(condLower.includes("snow")) icon = "❄️";
-            else if(condLower.includes("mist") || condLower.includes("fog")) icon = "🌫️";
-
-            card.innerHTML = `
-                <div class="weather-city">📍 ${city}</div>
-                <div class="weather-condition">${icon} ${condition}</div>
-                <div class="weather-temp">${temp}</div>
-                <div class="weather-details">
-                    <span>💧 Humid: ${humidity}</span>
-                    <span>💨 Wind: ${wind}</span>
-                </div>
-            `;
-            chatBox.insertBefore(card, loading);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function appendImageMessage(imageUrl, isUser = false) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
-            msgDiv.innerHTML = `<img src="${imageUrl}" style="max-width:100%; max-height:250px; border-radius:10px; display:block; border: 2px solid #a072ff;">`;
-            chatBox.insertBefore(msgDiv, loading);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function safeSpeak(text) {
-            if(!isMuted && 'speechSynthesis' in window) {
-                try {
-                    const speech = new SpeechSynthesisUtterance(text);
-                    speech.lang = 'en-US'; 
-                    window.speechSynthesis.speak(speech);
-                } catch(e) { console.log("Speech error"); }
-            }
-        }
-
-        async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text && !selectedImageBase64) return;
-
-            welcomeScreen.style.display = 'none';
-
-            if (selectedImageBase64) {
-                appendImageMessage(selectedImageBase64, true);
-            }
-            if (text) {
-                appendMessage(text, true);
-            }
-
-            userInput.value = '';
-            loading.style.display = 'block';
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            const lowerText = text.toLowerCase();
-
-            // Image Generation Check
-            if (!selectedImageBase64 && (lowerText.includes("image") || lowerText.includes("photo") || lowerText.includes("picture") || lowerText.includes("draw"))) {
-                const imageUrl = `https://image.pollinations.ai/p/${encodeURIComponent(text)}?model=flux&width=1024&height=1024`;
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    appendImageMessage(imageUrl, false);
-                    safeSpeak("Here is the masterpiece you requested!");
-                }, 1500);
-                return;
-            }
-
-            // Weather Bypass Check
-            if (!selectedImageBase64 && lowerText.includes("weather")) {
-                let city = "kolkata";
-                const words = lowerText.split(" ");
-                if (words.length > 2) {
-                    const inIndex = words.indexOf("in");
-                    if (inIndex !== -1 && words[inIndex + 1]) city = words[inIndex + 1];
-                }
-                
-                try {
-                    const resCondition = await fetch(`https://wttr.in/${city}?format=%C`);
-                    const resTemp = await fetch(`https://wttr.in/${city}?format=%t`);
-                    const resHumidity = await fetch(`https://wttr.in/${city}?format=%h`);
-                    const resWind = await fetch(`https://wttr.in/${city}?format=%w`);
-                    
-                    const condition = (await resCondition.text()).trim();
-                    const temp = (await resTemp.text()).trim();
-                    const humidity = (await resHumidity.text()).trim();
-                    const wind = (await resWind.text()).trim();
-                    
-                    loading.style.display = 'none';
-                    appendWeatherCard(city, condition, temp, humidity, wind);
-                    safeSpeak(`Live metrics synthesized for ${city}. Temperature is ${temp}`);
-                } catch (err) {
-                    loading.style.display = 'none';
-                    appendMessage("Could not sync weather metrics at this moment. Please try again.", false);
-                }
-                return; 
-            }
-
-            // Music Check
-            if (lowerText.includes("music") || lowerText.includes("song")) {
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    appendMessage("🎵 Processing audio wavelengths... To compose AI music, please explore: https://suno.com or https://udio.com directly!", false);
-                }, 1000);
-                return;
-            }
-
-            // 🔥 Main Chat Backend with Vercel & Render Jugaad 🔥
-            try {
-                const payload = { message: text };
-                if (selectedImageBase64) {
-                    payload.image = selectedImageBase64;
-                }
-
-                selectedImageBase64 = null;
-                fileInput.value = '';
-                previewBox.style.display = 'none';
-
-                let replyReceived = false;
-
-                // লুপ চালিয়ে প্রথমে ভার্সেল, পরে রেন্ডারে ট্রাই করবে
-                for (let apiUrl of BACKENDS) {
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            loading.style.display = 'none';
-                            appendMessage(data.reply, false);
-                            safeSpeak(data.reply);
